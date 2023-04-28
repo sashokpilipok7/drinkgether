@@ -1,13 +1,26 @@
 const express = require("express");
+const path = require("path");
+const http = require("http");
 const expressLayouts = require("express-ejs-layouts");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const flash = require("connect-flash");
 const passport = require("passport")
+const socketio = require("socket.io")
 
 const keys = require("./config/keys")
 
 const app = express();
+const server = http.createServer(app);
+const io = socketio(server);
+
+io.on("connection", (socket) => {
+    console.log("New ws connection");
+    console.log(socket)
+})
+
+app.use(express.static(path.join(__dirname, "public")));
+
 
 const pass = require("./config/passport");
 pass(passport);
@@ -52,8 +65,9 @@ app.use((req, res, next) => {
 // Routes
 app.use("/", require("./routes/index"));
 app.use("/users", require("./routes/users"));
+app.use("/room", require("./routes/room"))
 
 
 const PORT = process.env.PORT || '5000';
 
-app.listen(PORT, console.log(`App runnning on port ${PORT}`))
+server.listen(PORT, console.log(`App runnning on port ${PORT}`))
